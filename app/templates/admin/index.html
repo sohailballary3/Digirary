@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Portal | Digirary{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header-row">
+            <div>
+                <span class="section-tag">Library Administration</span>
+                <h1 class="page-main-title">Admin Dashboard</h1>
+                <p class="page-subtitle">Manage books, oversee users, and track active and overdue loans.</p>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.book_add') }}" class="btn btn-primary btn-sm">
+                    <span>+ Add New Book</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <a href="{{ url_for('admin.index') }}" class="admin-tab active">Overview</a>
+            <a href="{{ url_for('admin.books_list') }}" class="admin-tab">Manage Books</a>
+            <a href="{{ url_for('admin.users_list') }}" class="admin-tab">Users Directory</a>
+            <a href="{{ url_for('admin.borrowings') }}" class="admin-tab">Borrowing Audit</a>
+        </div>
+
+        <!-- Admin Metrics Grid -->
+        <div class="dashboard-metrics-grid">
+            <div class="dash-metric-card">
+                <div class="dash-metric-number text-gradient">{{ total_books }}</div>
+                <div class="dash-metric-label">Total Catalogue Books</div>
+                <a href="{{ url_for('admin.books_list') }}" class="admin-metric-link">Manage Books &rarr;</a>
+            </div>
+            <div class="dash-metric-card">
+                <div class="dash-metric-number">{{ total_users }}</div>
+                <div class="dash-metric-label">Registered Members</div>
+                <a href="{{ url_for('admin.users_list') }}" class="admin-metric-link">View Users &rarr;</a>
+            </div>
+            <div class="dash-metric-card">
+                <div class="dash-metric-number">{{ active_loans }}</div>
+                <div class="dash-metric-label">Currently Borrowed</div>
+                <a href="{{ url_for('admin.borrowings') }}" class="admin-metric-link">View Loans &rarr;</a>
+            </div>
+            <div class="dash-metric-card">
+                <div class="dash-metric-number {% if overdue_loans > 0 %}text-danger{% else %}text-muted{% endif %}">
+                    {{ overdue_loans }}
+                </div>
+                <div class="dash-metric-label">Overdue Loans</div>
+                <a href="{{ url_for('admin.borrowings') }}" class="admin-metric-link">Check Overdues &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Recent System Activity -->
+        <div class="dashboard-block" style="margin-top: 40px;">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">Recent Borrowing Activity</h2>
+                    <p class="dashboard-block-subtitle">Latest loan requests recorded in SQLite.</p>
+                </div>
+                <a href="{{ url_for('admin.borrowings') }}" class="btn-card-action">View All Records &rarr;</a>
+            </div>
+
+            {% if recent_borrowings|length > 0 %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Reader</th>
+                                <th>Book Title</th>
+                                <th>Borrow Date</th>
+                                <th>Duration</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in recent_borrowings %}
+                            <tr>
+                                <td>#{{ b.id }}</td>
+                                <td><strong>{{ b.username }}</strong></td>
+                                <td>{{ b.title }}</td>
+                                <td>{{ b.borrow_date }}</td>
+                                <td>{{ b.duration_days }} Days</td>
+                                <td>{{ b.due_date }}</td>
+                                <td>
+                                    {% if b.status == 'active' %}
+                                        <span class="badge-status-active">Active</span>
+                                    {% else %}
+                                        <span class="badge-status-returned">Returned</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-history-note">
+                    <p>No borrowing activities recorded yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

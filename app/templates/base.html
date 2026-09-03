@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Digirary - A modern, lightweight digital library web application for exploring, borrowing, and curating books.">
+    <meta name="theme-color" content="#0f172a">
+    <title>{% block title %}Digirary | Modern Digital Library{% endblock %}</title>
+
+    <!-- Typography: Google Fonts Plus Jakarta Sans & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background ambient glow effects -->
+    <div class="ambient-glow glow-top-left"></div>
+    <div class="ambient-glow glow-bottom-right"></div>
+
+    <!-- Navigation Header -->
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="{{ url_for('main.index') }}" class="brand-logo" id="brand-logo">
+                <div class="logo-icon-wrapper">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/>
+                        <path d="M6 2v20"/>
+                        <path d="M10 6h6"/>
+                        <path d="M10 10h6"/>
+                        <path d="M10 14h4"/>
+                    </svg>
+                </div>
+                <span class="brand-name">Digi<span class="brand-accent">rary</span></span>
+            </a>
+
+            <!-- Mobile Navigation Toggle -->
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Main Navigation Links -->
+            <nav class="main-nav" id="main-nav">
+                <a href="{{ url_for('main.index') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('books.list_books') }}" class="nav-link">Books</a>
+
+                {% if current_user %}
+                    <a href="{{ url_for('dashboard.index') }}" class="nav-link">Dashboard</a>
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin.index') }}" class="nav-link nav-admin-link">
+                            <span class="badge-admin">Admin</span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </nav>
+
+            <!-- Authentication Actions -->
+            <div class="header-actions">
+                {% if current_user %}
+                    <div class="user-profile-pill">
+                        <span class="user-avatar-circle">{{ current_user.username[:1].upper() }}</span>
+                        <span class="user-pill-name">{{ current_user.username }}</span>
+                    </div>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm" id="logout-btn">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Logout</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" id="nav-login-btn">Log In</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm" id="nav-register-btn">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Flash Notification Messages -->
+    <div class="container flash-messages-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        <div class="alert-content">
+                            {% if category == 'success' %}
+                                <span class="alert-icon">✓</span>
+                            {% elif category == 'danger' %}
+                                <span class="alert-icon">✕</span>
+                            {% elif category == 'warning' %}
+                                <span class="alert-icon">⚠</span>
+                            {% else %}
+                                <span class="alert-icon">ℹ</span>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button class="alert-close" onclick="this.parentElement.remove();" aria-label="Close notification">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="site-main" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-container">
+            <div class="footer-brand">
+                <div class="brand-logo footer-logo">
+                    <span class="brand-name">Digi<span class="brand-accent">rary</span></span>
+                </div>
+                <p class="footer-desc">
+                    A lightweight, high-performance personal digital library web application built with Python Flask and SQLite.
+                </p>
+                <div class="footer-tech-stack">
+                    <span class="tech-tag">Python 3</span>
+                    <span class="tech-tag">Flask</span>
+                    <span class="tech-tag">SQLite3</span>
+                    <span class="tech-tag">Vanilla JS</span>
+                </div>
+            </div>
+
+            <div class="footer-links-group">
+                <h4 class="footer-heading">Navigation</h4>
+                <ul class="footer-list">
+                    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('books.list_books') }}">Book Catalogue</a></li>
+                    {% if current_user %}
+                        <li><a href="{{ url_for('dashboard.index') }}">My Dashboard</a></li>
+                        {% if current_user.is_admin %}
+                            <li><a href="{{ url_for('admin.index') }}">Admin Portal</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}">User Login</a></li>
+                        <li><a href="{{ url_for('auth.register') }}">Create Account</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="footer-links-group">
+                <h4 class="footer-heading">Architecture</h4>
+                <ul class="footer-list text-muted">
+                    <li>Zero background daemons</li>
+                    <li>Optimized for 8 GB RAM</li>
+                    <li>Pure local SQLite storage</li>
+                    <li>Session-based security</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container footer-bottom">
+            <p>&copy; 2026 Digirary. Engineered for speed, elegance, and reliability.</p>
+        </div>
+    </footer>
+
+    <!-- Interactive Book Details Modal -->
+    <div class="modal-overlay" id="bookModalOverlay" aria-hidden="true">
+        <div class="modal-card" id="bookModalCard">
+            <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript File -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Reader Dashboard | Digirary{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <!-- Dashboard Profile Banner -->
+        <div class="dashboard-hero-card">
+            <div class="dashboard-profile-info">
+                <div class="dashboard-avatar-large">
+                    {{ current_user.username[:1].upper() }}
+                </div>
+                <div class="dashboard-user-meta">
+                    <div class="user-name-role-row">
+                        <h1 class="dashboard-username">{{ current_user.username }}</h1>
+                        {% if current_user.is_admin %}
+                            <span class="badge-admin">Admin Privileges</span>
+                        {% else %}
+                            <span class="badge-role">Member</span>
+                        {% endif %}
+                    </div>
+                    <p class="dashboard-email">{{ current_user.email }}</p>
+                </div>
+            </div>
+
+            <div class="dashboard-actions-group">
+                <a href="{{ url_for('books.list_books') }}" class="btn btn-primary btn-sm">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <span>Browse Books</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+            </div>
+        </div>
+
+        <!-- Quick Summary Cards -->
+        <div class="dashboard-metrics-grid">
+            <div class="dash-metric-card">
+                <div class="dash-metric-number text-gradient">{{ stats.active_count }}</div>
+                <div class="dash-metric-label">Active Loans</div>
+            </div>
+            <div class="dash-metric-card">
+                <div class="dash-metric-number {% if stats.overdue_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                    {{ stats.overdue_count }}
+                </div>
+                <div class="dash-metric-label">Overdue Books</div>
+            </div>
+            <div class="dash-metric-card">
+                <div class="dash-metric-number">{{ stats.history_count }}</div>
+                <div class="dash-metric-label">Returned Books</div>
+            </div>
+        </div>
+
+        <!-- Currently Borrowed Books Section -->
+        <div class="dashboard-block">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">Currently Borrowed Books</h2>
+                    <p class="dashboard-block-subtitle">Track your active reading periods, loan durations, and due dates.</p>
+                </div>
+                <span class="results-badge">{{ active_borrowings|length }} Active Loan{% if active_borrowings|length != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if active_borrowings|length > 0 %}
+                <div class="active-loans-grid">
+                    {% for item in active_borrowings %}
+                    <div class="loan-card {% if item.is_overdue %}loan-card-overdue{% endif %}">
+                        <!-- Left mini cover -->
+                        <div class="loan-card-cover" style="background: {{ item.cover_gradient }};">
+                            <span class="loan-spine"></span>
+                        </div>
+
+                        <!-- Loan Details -->
+                        <div class="loan-card-body">
+                            <div class="loan-card-top">
+                                <div>
+                                    <span class="book-category-tag">{{ item.category_name }}</span>
+                                    <h3 class="loan-book-title">
+                                        <a href="{{ url_for('books.detail', book_id=item.book_id) }}">{{ item.title }}</a>
+                                    </h3>
+                                    <p class="loan-book-author">By {{ item.author }}</p>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div>
+                                    {% if item.is_overdue %}
+                                        <span class="badge-status-overdue">⚠ OVERDUE</span>
+                                    {% else %}
+                                        <span class="badge-status-active">Active ({{ item.days_remaining }} days left)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Dates Info Grid -->
+                            <div class="loan-dates-table">
+                                <div class="loan-date-col">
+                                    <span class="loan-date-label">Borrowed On</span>
+                                    <span class="loan-date-val">{{ item.borrow_date }}</span>
+                                </div>
+                                <div class="loan-date-col">
+                                    <span class="loan-date-label">Duration Selected</span>
+                                    <span class="loan-date-val">{{ item.duration_days }} Days</span>
+                                </div>
+                                <div class="loan-date-col">
+                                    <span class="loan-date-label">Due Date</span>
+                                    <span class="loan-date-val {% if item.is_overdue %}text-danger font-bold{% endif %}">
+                                        {{ item.due_date.strftime('%B %d, %Y') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Return Action -->
+                            <div class="loan-card-actions">
+                                <form method="POST" action="{{ url_for('borrow.return_book', borrowing_id=item.borrowing_id) }}" onsubmit="return confirm('Confirm returning \'{{ item.title }}\'?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none">
+                                            <polyline points="9 14 4 9 9 4"></polyline>
+                                            <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                                        </svg>
+                                        <span>Return Book</span>
+                                    </button>
+                                </form>
+                                <a href="{{ url_for('books.detail', book_id=item.book_id) }}" class="btn-card-action">View Book</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-dashboard-card">
+                    <div class="empty-icon">📖</div>
+                    <h3>You have no books currently borrowed</h3>
+                    <p>Explore our library catalogue to pick your next digital read with flexible 7, 14, or 30-day loans.</p>
+                    <a href="{{ url_for('books.list_books') }}" class="btn btn-primary">Browse Catalogue</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Borrowing History Section -->
+        <div class="dashboard-block" style="margin-top: 50px;">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">Borrowing History</h2>
+                    <p class="dashboard-block-subtitle">Archive of past returned volumes and reading records.</p>
+                </div>
+                <span class="results-badge">{{ history|length }} Past Loan{% if history|length != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if history|length > 0 %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Borrowed Date</th>
+                                <th>Selected Duration</th>
+                                <th>Due Date</th>
+                                <th>Returned On</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in history %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('books.detail', book_id=h.book_id) }}" class="table-link">
+                                        {{ h.title }}
+                                    </a>
+                                </td>
+                                <td>{{ h.author }}</td>
+                                <td><span class="book-category-tag">{{ h.category_name }}</span></td>
+                                <td>{{ h.borrow_date }}</td>
+                                <td>{{ h.duration_days }} Days</td>
+                                <td>{{ h.due_date }}</td>
+                                <td>{{ h.return_date }}</td>
+                                <td><span class="badge-status-returned">Returned</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-history-note">
+                    <p>No completed borrowing history yet. Books you return will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

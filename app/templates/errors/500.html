@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error (500) | Digirary{% endblock %}
+
+{% block content %}
+<section class="error-page-section">
+    <div class="container text-center">
+        <div class="error-code-badge error-code-500">500</div>
+        <h1 class="error-title">Internal Library Error</h1>
+        <p class="error-desc">An unexpected issue occurred while processing your request. Please try again or return to the main catalog.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return Home</a>
+            <a href="{{ url_for('books.list_books') }}" class="btn btn-secondary">Catalogue</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

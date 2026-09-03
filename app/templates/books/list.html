@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Book Catalogue | Digirary{% endblock %}
+
+{% block content %}
+<section class="catalog-page-header">
+    <div class="container">
+        <span class="section-tag">Library Directory</span>
+        <h1 class="page-main-title">Digital Book Catalogue</h1>
+        <p class="page-subtitle">Search, filter by topic, and borrow volumes directly to your personal reading dashboard.</p>
+
+        <!-- Search & Filter Form -->
+        <form method="GET" action="{{ url_for('books.list_books') }}" class="catalog-filter-form">
+            <div class="search-input-group search-input-large">
+                <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input 
+                    type="text" 
+                    name="q" 
+                    value="{{ current_query }}" 
+                    class="search-input" 
+                    placeholder="Search titles, authors, or topics..."
+                    aria-label="Search digital books"
+                >
+                {% if current_query %}
+                    <a href="{{ url_for('books.list_books', category=current_category if current_category != 'all' else None) }}" class="clear-search-btn" title="Clear search">&times;</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="category-pills-bar">
+                <a href="{{ url_for('books.list_books', q=current_query if current_query else None) }}" class="genre-pill {% if current_category == 'all' %}active{% endif %}">
+                    <span>✨ All Genres</span>
+                </a>
+                {% for cat in categories %}
+                    <a href="{{ url_for('books.list_books', category=cat.slug, q=current_query if current_query else None) }}" class="genre-pill {% if current_category == cat.slug %}active{% endif %}">
+                        <span>{{ cat.name }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Books Listing Section -->
+<section class="catalog-content-section">
+    <div class="container">
+        <div class="catalog-header">
+            <div>
+                <h2 class="section-title" style="font-size: 1.4rem;">
+                    {% if current_query %}
+                        Results for "<span class="text-gradient">{{ current_query }}</span>"
+                    {% elif current_category != 'all' %}
+                        Filtered by Category
+                    {% else %}
+                        All Volumes
+                    {% endif %}
+                </h2>
+            </div>
+            <div>
+                <span class="results-badge">Showing {{ books|length }} book{% if books|length != 1 %}s{% endif %}</span>
+            </div>
+        </div>
+
+        {% if books|length > 0 %}
+            <div class="books-grid">
+                {% for book in books %}
+                <article class="book-card" data-id="{{ book.id }}">
+                    <!-- Cover -->
+                    <div class="book-cover" style="background: {{ book.cover_gradient }};">
+                        <div class="book-spine-effect"></div>
+                        <div class="book-cover-meta">
+                            <span class="book-category-tag">{{ book.category_name }}</span>
+                            {% if book.available %}
+                                <span class="badge-status-available">Available</span>
+                            {% else %}
+                                <span class="badge-status-borrowed">Borrowed</span>
+                            {% endif %}
+                        </div>
+                        <h3 class="book-cover-title">{{ book.title }}</h3>
+                        <p class="book-cover-author">By {{ book.author }}</p>
+                        <div class="book-cover-footer">
+                            <div class="book-rating">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="#fbbf24" stroke="#fbbf24">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                <span>{{ book.rating }}</span>
+                            </div>
+                            <span class="book-year">{{ book.published_year }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="book-content">
+                        <p class="book-summary">{{ book.summary }}</p>
+
+                        <div class="book-footer">
+                            <span class="book-pages-badge">
+                                <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                {{ book.total_pages }} pages
+                            </span>
+                            <div class="card-btn-group">
+                                <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn-card-action">Details</a>
+                                {% if book.available %}
+                                    <a href="{{ url_for('borrow.borrow_book', book_id=book.id) }}" class="btn btn-primary btn-xs">Borrow</a>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-xs" disabled>Checked Out</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-results-state">
+                <div class="no-results-icon">
+                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                </div>
+                <h3>No books found matching your query</h3>
+                <p>Try searching for a different keyword, author, or reset your filters.</p>
+                <a href="{{ url_for('books.list_books') }}" class="btn btn-secondary">View All Books</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

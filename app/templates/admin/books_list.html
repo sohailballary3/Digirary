@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Books | Digirary Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header-row">
+            <div>
+                <span class="section-tag">Catalogue Management</span>
+                <h1 class="page-main-title">All Library Books</h1>
+                <p class="page-subtitle">Add new titles, update existing book details, or manage availability.</p>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.book_add') }}" class="btn btn-primary btn-sm">
+                    <span>+ Add New Book</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <a href="{{ url_for('admin.index') }}" class="admin-tab">Overview</a>
+            <a href="{{ url_for('admin.books_list') }}" class="admin-tab active">Manage Books</a>
+            <a href="{{ url_for('admin.users_list') }}" class="admin-tab">Users Directory</a>
+            <a href="{{ url_for('admin.borrowings') }}" class="admin-tab">Borrowing Audit</a>
+        </div>
+
+        <!-- Books Table -->
+        <div class="dashboard-block">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">Books in Catalog ({{ books|length }})</h2>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Book Title</th>
+                            <th>Author</th>
+                            <th>Category</th>
+                            <th>Year</th>
+                            <th>Pages</th>
+                            <th>Rating</th>
+                            <th>Availability</th>
+                            <th>Featured</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in books %}
+                        <tr>
+                            <td>#{{ b.id }}</td>
+                            <td>
+                                <div class="table-book-title-cell">
+                                    <div class="table-mini-spine" style="background: {{ b.cover_gradient }};"></div>
+                                    <strong>{{ b.title }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ b.author }}</td>
+                            <td><span class="book-category-tag">{{ b.category_name }}</span></td>
+                            <td>{{ b.published_year or '-' }}</td>
+                            <td>{{ b.total_pages }}</td>
+                            <td>★ {{ b.rating }}</td>
+                            <td>
+                                {% if b.available %}
+                                    <span class="badge-status-available">Available</span>
+                                {% else %}
+                                    <span class="badge-status-borrowed">Borrowed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.featured %}
+                                    <span class="book-featured-badge">Featured</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="table-action-buttons">
+                                    <a href="{{ url_for('books.detail', book_id=b.id) }}" class="btn-table-action" title="View Book Page">View</a>
+                                    <a href="{{ url_for('admin.book_edit', book_id=b.id) }}" class="btn-table-action btn-table-edit" title="Edit Book">Edit</a>
+                                    <form method="POST" action="{{ url_for('admin.book_delete', book_id=b.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to permanently delete \'{{ b.title }}\'?');">
+                                        <button type="submit" class="btn-table-action btn-table-delete" title="Delete Book">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Users Directory | Digirary Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header-row">
+            <div>
+                <span class="section-tag">User Access Control</span>
+                <h1 class="page-main-title">Registered Users</h1>
+                <p class="page-subtitle">Directory of registered readers and administrators stored securely in SQLite.</p>
+            </div>
+        </div>
+
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <a href="{{ url_for('admin.index') }}" class="admin-tab">Overview</a>
+            <a href="{{ url_for('admin.books_list') }}" class="admin-tab">Manage Books</a>
+            <a href="{{ url_for('admin.users_list') }}" class="admin-tab active">Users Directory</a>
+            <a href="{{ url_for('admin.borrowings') }}" class="admin-tab">Borrowing Audit</a>
+        </div>
+
+        <!-- Users Table -->
+        <div class="dashboard-block">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">Users Directory ({{ users|length }})</h2>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Email Address</th>
+                            <th>Role / Privileges</th>
+                            <th>Active Loans</th>
+                            <th>Total Borrowings</th>
+                            <th>Registration Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>#{{ u.id }}</td>
+                            <td>
+                                <div class="table-user-cell">
+                                    <span class="user-avatar-mini">{{ u.username[:1].upper() }}</span>
+                                    <strong>{{ u.username }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                {% if u.is_admin %}
+                                    <span class="badge-admin">Admin</span>
+                                {% else %}
+                                    <span class="badge-role">Reader</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.active_loans_count > 0 %}
+                                    <span class="badge-status-active">{{ u.active_loans_count }} Active</span>
+                                {% else %}
+                                    <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ u.total_loans_count }} total</td>
+                            <td>{{ u.created_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

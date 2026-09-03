@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Borrow {{ book.title }} | Digirary{% endblock %}
+
+{% block content %}
+<section class="borrow-flow-section">
+    <div class="container borrow-flow-container">
+        <!-- Back Link -->
+        <a href="{{ url_for('books.detail', book_id=book.id) }}" class="back-link">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back to Book Details</span>
+        </a>
+
+        <div class="borrow-card">
+            <div class="borrow-header">
+                <span class="section-tag">Borrowing Confirmation</span>
+                <h1 class="borrow-title">Choose Reading Duration</h1>
+                <p class="borrow-subtitle">Select a loan duration that fits your schedule. Your calculated return due date will be stored in your dashboard.</p>
+            </div>
+
+            <!-- Book Brief Summary -->
+            <div class="borrow-book-summary-box">
+                <div class="mini-cover-badge" style="background: {{ book.cover_gradient }};">
+                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" stroke-width="2" fill="none">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/>
+                        <path d="M6 2v20"/>
+                    </svg>
+                </div>
+                <div class="borrow-book-text">
+                    <h3 class="borrow-book-name">{{ book.title }}</h3>
+                    <p class="borrow-book-meta">By {{ book.author }} &bull; {{ book.category_name }} &bull; {{ book.total_pages }} pages</p>
+                </div>
+            </div>
+
+            <!-- Borrow Form -->
+            <form method="POST" action="{{ url_for('borrow.borrow_book', book_id=book.id) }}" class="borrow-form">
+                <h4 class="duration-section-heading">Select Duration:</h4>
+
+                <div class="duration-options-grid">
+                    {% for opt in duration_previews %}
+                    <label class="duration-radio-card {% if opt.recommended %}duration-card-recommended{% endif %}">
+                        <input 
+                            type="radio" 
+                            name="duration" 
+                            value="{{ opt.days }}" 
+                            {% if opt.recommended %}checked{% endif %}
+                        >
+                        <div class="duration-card-content">
+                            {% if opt.recommended %}
+                                <span class="badge-recommended">Popular</span>
+                            {% endif %}
+                            <div class="duration-days-number">{{ opt.days }} Days</div>
+                            <div class="duration-due-label">Due Date:</div>
+                            <div class="duration-due-date">{{ opt.due_date }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div class="borrow-policy-box">
+                    <div class="policy-item">
+                        <span class="policy-icon">📅</span>
+                        <span>Loan starts today: <strong>{{ today_formatted }}</strong></span>
+                    </div>
+                    <div class="policy-item">
+                        <span class="policy-icon">🔄</span>
+                        <span>You can return the digital book anytime from your dashboard.</span>
+                    </div>
+                    <div class="policy-item">
+                        <span class="policy-icon">⚠️</span>
+                        <span>Overdue status is displayed automatically if not returned before the due date.</span>
+                    </div>
+                </div>
+
+                <div class="borrow-form-actions">
+                    <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Confirm & Borrow Book
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

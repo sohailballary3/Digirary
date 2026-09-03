@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Borrowing Audit | Digirary Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="admin-header-row">
+            <div>
+                <span class="section-tag">Circulation History</span>
+                <h1 class="page-main-title">Borrowing Records Audit</h1>
+                <p class="page-subtitle">Track every loan transaction, selected durations, due dates, and overdue returns across the library.</p>
+            </div>
+        </div>
+
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <a href="{{ url_for('admin.index') }}" class="admin-tab">Overview</a>
+            <a href="{{ url_for('admin.books_list') }}" class="admin-tab">Manage Books</a>
+            <a href="{{ url_for('admin.users_list') }}" class="admin-tab">Users Directory</a>
+            <a href="{{ url_for('admin.borrowings') }}" class="admin-tab active">Borrowing Audit</a>
+        </div>
+
+        <!-- Borrowings Table -->
+        <div class="dashboard-block">
+            <div class="dashboard-block-header">
+                <div>
+                    <h2 class="dashboard-block-title">All Borrowing Transactions ({{ borrowings|length }})</h2>
+                </div>
+            </div>
+
+            {% if borrowings|length > 0 %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Reader</th>
+                                <th>Book Title</th>
+                                <th>Borrow Date</th>
+                                <th>Duration</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in borrowings %}
+                            <tr {% if b.is_overdue %}class="row-overdue-highlight"{% endif %}>
+                                <td>#{{ b.id }}</td>
+                                <td>
+                                    <strong>{{ b.username }}</strong>
+                                    <div class="table-subtext">{{ b.email }}</div>
+                                </td>
+                                <td>
+                                    <strong>{{ b.book_title }}</strong>
+                                    <div class="table-subtext">By {{ b.book_author }}</div>
+                                </td>
+                                <td>{{ b.borrow_date }}</td>
+                                <td>{{ b.duration_days }} Days</td>
+                                <td>
+                                    <span class="{% if b.is_overdue %}text-danger font-bold{% endif %}">
+                                        {{ b.due_date.strftime('%b %d, %Y') if b.due_date.strftime is defined else b.due_date }}
+                                    </span>
+                                </td>
+                                <td>{{ b.return_date or '-' }}</td>
+                                <td>
+                                    {% if b.status == 'returned' %}
+                                        <span class="badge-status-returned">Returned</span>
+                                    {% elif b.is_overdue %}
+                                        <span class="badge-status-overdue">⚠ OVERDUE</span>
+                                    {% else %}
+                                        <span class="badge-status-active">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    {% if b.status == 'active' %}
+                                        <form method="POST" action="{{ url_for('borrow.return_book', borrowing_id=b.id) }}" onsubmit="return confirm('Process return for loan #{{ b.id }}?');" style="display: inline;">
+                                            <button type="submit" class="btn btn-secondary btn-xs">Mark Returned</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted">Closed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-history-note">
+                    <p>No borrowing transactions on record yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

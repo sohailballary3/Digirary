@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Digirary — Next-Gen Lightweight Digital Library{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-container">
+        <div class="hero-content">
+            <div class="badge-pill">
+                <span class="pulse-dot"></span>
+                <span>Lightweight Local Digital Library</span>
+            </div>
+            <h1 class="hero-title">
+                Explore Knowledge with <span class="text-gradient">Digirary</span>
+            </h1>
+            <p class="hero-subtitle">
+                A blazingly fast personal digital catalog. Engineered with Python, Flask, and SQLite. Borrow titles with flexible 7, 14, or 30-day loans and zero background overhead.
+            </p>
+
+            <!-- Action Buttons for Visitors -->
+            <div class="hero-cta-group">
+                <a href="{{ url_for('books.list_books') }}" class="btn btn-primary btn-lg">
+                    <span>Browse All Books</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                {% if not current_user %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-lg">Register Account</a>
+                {% else %}
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary btn-lg">My Reading Dashboard</a>
+                {% endif %}
+            </div>
+
+            <!-- Instant Search Box -->
+            <div class="search-box-wrapper" style="margin-top: 36px;">
+                <div class="search-input-group">
+                    <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="bookSearchInput" 
+                        class="search-input" 
+                        placeholder="Search books by title, author, or topic..." 
+                        autocomplete="off"
+                        aria-label="Search digital books"
+                    >
+                    <button class="clear-search-btn" id="clearSearchBtn" aria-label="Clear search query" style="display: none;">
+                        &times;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Genre Filter Pills -->
+            <div class="category-pills-bar" id="categoryPillsBar">
+                <button class="genre-pill active" data-category="all">
+                    <span>✨ All Genres</span>
+                </button>
+                {% for cat in categories %}
+                <button class="genre-pill" data-category="{{ cat.slug }}">
+                    <span>{{ cat.name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Metrics Counter Section -->
+<section class="stats-section" id="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-indigo">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/>
+                        <path d="M6 2v20"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-total-books">{{ stats.total_books }}</span>
+                    <span class="stat-label">Digital Volumes</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-emerald">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M4 6h16M4 12h16M4 18h7"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-categories">{{ stats.categories_count }}</span>
+                    <span class="stat-label">Active Topics</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-amber">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-featured">{{ stats.featured_count }}</span>
+                    <span class="stat-label">Featured Works</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-rose">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-loans">{{ stats.active_loans }}</span>
+                    <span class="stat-label">Active Loans</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Books Catalog Showcase Section -->
+<section class="catalog-section" id="explore-section">
+    <div class="container">
+        <div class="catalog-header">
+            <div>
+                <span class="section-tag">Catalog Highlights</span>
+                <h2 class="section-title">Featured Digital Collection</h2>
+            </div>
+            <div class="catalog-status">
+                <a href="{{ url_for('books.list_books') }}" class="btn btn-secondary btn-sm">View Full Catalogue &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Book Cards Grid -->
+        <div class="books-grid" id="booksGrid">
+            {% for book in books %}
+            <article class="book-card" data-id="{{ book.id }}" data-category="{{ book.category_slug }}">
+                <!-- Book Cover Header -->
+                <div class="book-cover" style="background: {{ book.cover_gradient }};">
+                    <div class="book-spine-effect"></div>
+                    <div class="book-cover-meta">
+                        <span class="book-category-tag">{{ book.category_name }}</span>
+                        {% if book.available %}
+                            <span class="badge-status-available">Available</span>
+                        {% else %}
+                            <span class="badge-status-borrowed">Borrowed</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="book-cover-title">{{ book.title }}</h3>
+                    <p class="book-cover-author">By {{ book.author }}</p>
+                    <div class="book-cover-footer">
+                        <div class="book-rating">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="#fbbf24" stroke="#fbbf24">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            <span>{{ book.rating }}</span>
+                        </div>
+                        <span class="book-year">{{ book.published_year }}</span>
+                    </div>
+                </div>
+
+                <!-- Book Body Info -->
+                <div class="book-content">
+                    <p class="book-summary">
+                        {{ book.summary }}
+                    </p>
+                    <div class="book-footer">
+                        <span class="book-pages-badge">
+                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            {{ book.total_pages }} pages
+                        </span>
+                        <div class="card-btn-group">
+                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn-card-action">Details</a>
+                            {% if book.available %}
+                                <a href="{{ url_for('borrow.borrow_book', book_id=book.id) }}" class="btn btn-primary btn-xs">Borrow</a>
+                            {% else %}
+                                <button class="btn btn-secondary btn-xs" disabled>Checked Out</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- No Results Fallback -->
+        <div class="no-results-state" id="noResultsState" style="display: none;">
+            <div class="no-results-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+            </div>
+            <h3>No books matched your search</h3>
+            <p>Try searching for a different title, author, or reset your active filters.</p>
+            <button class="btn btn-secondary" id="resetSearchFilterBtn">Reset Filters</button>
+        </div>
+    </div>
+</section>
+
+<!-- System Features & Architecture Section -->
+<section class="features-section" id="features-section">
+    <div class="container">
+        <div class="section-intro">
+            <span class="section-tag">Engineered for Efficiency</span>
+            <h2 class="section-title">Built Lightweight. Zero Bloat.</h2>
+            <p class="section-desc">Digirary is optimized for seamless, distraction-free reading without heavy background overhead.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon feature-glow-cyan">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Micro Memory Footprint</h3>
+                <p class="feature-text">
+                    Consumes under 35 MB of RAM. Runs smoothly alongside heavy tasks on systems with 8 GB RAM.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon feature-glow-indigo">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Embedded SQLite Storage</h3>
+                <p class="feature-text">
+                    All user accounts, borrowings, and book records reside in a zero-configuration, single-file database.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon feature-glow-emerald">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Native Web Standards</h3>
+                <p class="feature-text">
+                    Crafted with semantic HTML5, modern CSS3 styling, and responsive Vanilla JavaScript. No bulky node_modules.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
