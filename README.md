@@ -157,3 +157,6 @@ This runs all 30 tests covering:
 2. Public book catalogue, search by title and author, category filters, and detail pages.
 3. 7-day, 14-day, and 30-day borrowing duration options, exact due date calculations, availability status toggling, duplicate loan prevention, and return processing.
 4. Administrator route protection (403/redirect for non-admins), book creation, editing, deletion, and system-wide loan audit logs.
+
+## Development
+Homepage improvements are developed on a separate feature branch.
